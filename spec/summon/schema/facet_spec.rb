@@ -26,6 +26,7 @@ describe Summon::Facet do
     it "should return the Frech locale" do
       @facet.locale = "fr"
       
+      @facet.display_name.should == "ContentType"
       @facet.local_name.should == "Type de la Contente"
     end
   end
