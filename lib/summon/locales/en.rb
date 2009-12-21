@@ -3,7 +3,12 @@ module Summon
     module EN
       TRANSLATIONS = {
         "ContentType"               => "ContentType",
-        "Content Type"              => "Content Type",
+        "IsScholarly"               => "IsScholarly",
+        "Language"                  => "Language",
+        "Library"                   => "Library",
+        "PublicationDate"           => "PublicationDate",
+        "SubjectTerms"              => "SubjectTerms",
+        
         "Album"                     => "Album",
         "Architectural Drawing"     => "Architectural Drawing",
         "Archival Material"         => "Archival Material",
