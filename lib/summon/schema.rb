@@ -13,7 +13,7 @@ module Summon
     end
 
     module Initializer
-      def new(values = {})
+      def new(values = {}, locale = Summon::DEFAULT_LOCALE)
         dup = {}
         for k, v in values
           dup[k.to_s] = v
@@ -25,17 +25,22 @@ module Summon
         for attribute in @attrs
           instance.instance_variable_set("@#{attribute.name}", attribute.get(dup))
         end
+        instance.instance_variable_set("@default_locale", Summon::DEFAULT_LOCALE)
+        instance.instance_eval do
+          raise "Locale '#{locale}' does not exist." unless Summon::Locale.const_defined?(locale.upcase)
+          @locale = locale
+        end
+        
         instance
       end
     end
     
-    module ClassMethods      
-      
+    module ClassMethods
       def attr(name, options = {})
         if name.to_s =~ /^(.*)\?$/
           name = $1
           options[:boolean] = true
-        end        
+        end
         symbol = name.to_sym
         @attrs << ::Summon::Schema::Attr.new(symbol, options)
         define_method(name) do |*args|
@@ -55,6 +60,7 @@ module Summon
       def summon!
         @attrs = []
         attr_reader :src
+        attr_accessor :default_locale
       end
     end
     
@@ -63,7 +69,24 @@ module Summon
         self.class.attrs.inject({}) do |json, attr|
           json.merge attr.name => self.send(attr.name)
         end.to_json(*a)        
-      end    
+      end
+      
+      def locale=(value)
+        @locale = value
+        if Summon::Locale.const_defined?(value.upcase)
+          @translator = Summon::Locale.const_get(value.upcase)
+        else
+          raise "Locale '#{value}' does not exist."
+        end
+      end
+      def locale
+        @locale ||= @default_locale
+      end
+      
+      def translate(value)
+        @translator ||= Summon::Locale.const_get(locale.upcase)
+        @translator::TRANSLATIONS[value] ? @translator::TRANSLATIONS[value] : Summon::Locale.const_get(@default_locale.upcase)::TRANSLATIONS[value] 
+      end
     end
     
     class Attr
@@ -79,14 +102,14 @@ module Summon
         @single = options[:single].nil? ? !(name.to_s.downcase =~ /s$/) : options[:single]
       end
       
-      def get(json)      
+      def get(json)
         raw = json[@json_name || @camel_name]
         raw = json[@pascal_name] if raw.nil?
         if raw.nil?
           @single ? nil : []
         else
           raw = @single && raw.kind_of?(Array) ? raw.first : raw
-          transform(raw) || raw          
+          transform(raw) || raw
         end
       end
       
@@ -106,4 +129,4 @@ module Summon
       end
     end
   end
-end
+ end

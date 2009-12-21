@@ -14,6 +14,72 @@ describe Summon::Schema do
     @class.new(values)
   end
   
+  describe "Locale" do
+    it "should have a default locale" do
+      init(:foo => "bar", :baz => "bang").default_locale.should == 'en'
+    end
+    
+    it "should have a locale set to default locale if a locale is not specified" do
+      init(:foo => "bar", :baz => "bang").locale.should == 'en'
+    end
+    
+    it "should have a locale set to the locale specified" do
+      class XYZ < Summon::Schema
+      end
+      
+      @class = XYZ.new({}, 'fr')
+      @class.locale.should == 'fr'
+    end
+    
+    it "should error if an invalid locale is specified" do
+      class XYZ < Summon::Schema
+      end
+      
+      proc do
+        @class = XYZ.new({}, 'gr')
+      end.should raise_error("Locale 'gr' does not exist.")
+    end
+    
+    it "should have a french local when set to fr" do
+      class XYZ < Summon::Schema
+      end
+      
+      @class = XYZ.new()
+      @class.locale = 'fr'
+      @class.locale.should == 'fr'
+    end
+    
+    it "should translate ContentType to french" do
+      class XYZ < Summon::Schema
+      end
+      
+      @class = XYZ.new()
+      @class.locale = 'fr'
+      @class.translate("ContentType").should == 'Type de la Contente'
+    end
+    
+    it "should be able to switch translation languages" do
+      class XYZ < Summon::Schema
+      end
+      
+      @class = XYZ.new()
+      @class.locale = 'fr'
+      @class.translate("ContentType").should == 'Type de la Contente'
+      @class.locale = 'en'
+      @class.translate("ContentType").should == 'ContentType'
+    end
+    
+    it "should be go to the default language if the locale is not available" do
+      class XYZ < Summon::Schema
+      end
+      
+      @class = XYZ.new()
+      @class.locale = 'fr'
+      @class.translate("ContentType").should == 'Type de la Contente'
+      @class.translate("Book").should == 'Book'
+    end
+  end
+  
   it "pulls its attributes from a hash" do
     class_eval do
       attr :foo 
@@ -137,7 +203,4 @@ describe Summon::Schema do
     end
     init({}).foos.should == []
   end
-  
-  
-  
 end

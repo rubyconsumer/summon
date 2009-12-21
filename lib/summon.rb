@@ -22,6 +22,10 @@ module Summon
   require 'summon/schema/citation'
   require 'summon/schema/error'
   
+  DEFAULT_LOCALE = 'en'
+  require 'summon/locales/en'
+  require 'summon/locales/fr'
+  
   def self.escape(value)
     value.gsub(/(,|\(|\)|\{|\}|\$|\:)/, '\\\\\1').gsub("\\", '\\')
   end

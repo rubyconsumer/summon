@@ -14,6 +14,23 @@ describe Summon::Facet do
     first.remove_command.should == "eatMyShorts()"
   end
   
+  describe "translate display name" do
+    before(:each) do
+      @facet = Summon::Facet.new(JSON.parse(EXAMPLE_FACET_JSON))
+    end
+    
+    it "should return the default value" do
+      @facet.local_name.should == @facet.display_name
+    end
+    
+    it "should return the Frech locale" do
+      @facet.locale = "fr"
+      
+      @facet.local_name.should == "Type de la Contente"
+    end
+  end
+  
+  
   it "should now how to escape values" do
     count = Summon::FacetCount.new(:value => "the quick, brown, fox")
     count.value.should == "the quick, brown, fox"
@@ -79,7 +96,9 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,Book,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,Book,true)
   count: 799602
+  default_locale: en
   further_limiting: true
+  locale: en
   negated: false
   remove_command: eatMyShorts()
   src: 
@@ -89,7 +108,9 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,JournalArticle,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,JournalArticle,true)
   count: 49765
+  default_locale: en
   further_limiting: true
+  locale: en
   negated: false
   remove_command: eatMyShorts()
   src: 
@@ -99,13 +120,17 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,Journal Article,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,Journal Article,true)
   count: 179002
+  default_locale: en
   further_limiting: true
+  locale: en
   negated: false
   remove_command: eatMyShorts()
   src: 
   value: Journal Article
+default_locale: en
 display_name: ContentType
 field_name: ContentType_sfacet
+locale: en
 page_number: 1
 page_size: 10
 remove_command: removeFacetField(ContentType_sfacet)
