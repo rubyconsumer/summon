@@ -7,6 +7,10 @@ require 'json'
 
 module Summon
   VERSION = "1.1.2"
+  DEFAULT_LOCALE = 'en'
+  require 'summon/locales/en'
+  require 'summon/locales/fr'
+  
   require 'summon/log'
   require 'summon/service'
   require 'summon/transport'
@@ -21,10 +25,6 @@ module Summon
   require 'summon/schema/availability'
   require 'summon/schema/citation'
   require 'summon/schema/error'
-  
-  DEFAULT_LOCALE = 'en'
-  require 'summon/locales/en'
-  require 'summon/locales/fr'
   
   def self.escape(value)
     value.gsub(/(,|\(|\)|\{|\}|\$|\:)/, '\\\\\1').gsub("\\", '\\')
