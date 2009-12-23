@@ -13,7 +13,7 @@ module Summon
     end
 
     module Initializer
-      def new(values = {}, locale = Summon::DEFAULT_LOCALE)
+      def new(service, values = {})
         dup = {}
         for k, v in values
           dup[k.to_s] = v
@@ -21,16 +21,11 @@ module Summon
         instance = allocate
         instance.instance_eval do
           @src = values
+          @service = service
         end
         for attribute in @attrs
-          instance.instance_variable_set("@#{attribute.name}", attribute.get(dup))
-        end
-        instance.instance_variable_set("@default_locale", Summon::DEFAULT_LOCALE)
-        instance.instance_eval do
-          raise "Locale '#{locale}' does not exist." unless Summon::Locale.const_defined?(locale.upcase)
-          @locale = locale
-        end
-        
+          instance.instance_variable_set("@#{attribute.name}", attribute.get(service, dup))
+        end        
         instance
       end
     end
@@ -60,7 +55,6 @@ module Summon
       def summon!
         @attrs = []
         attr_reader :src
-        attr_accessor :default_locale
       end
     end
     
@@ -71,21 +65,14 @@ module Summon
         end.to_json(*a)        
       end
       
-      def locale=(value)
-        @locale = value
-        if Summon::Locale.const_defined?(value.upcase)
-          @translator = Summon::Locale.const_get(value.upcase)
-        else
-          raise "Locale '#{value}' does not exist."
-        end
-      end
       def locale
-        @locale ||= @default_locale
+        @service.locale
       end
       
       def translate(value)
-        @translator ||= Summon::Locale.const_get(locale.upcase)
-        @translator::TRANSLATIONS[value] ? @translator::TRANSLATIONS[value] : Summon::Locale.const_get(@default_locale.upcase)::TRANSLATIONS[value] 
+        default = Summon::Locale.const_get(Summon::DEFAULT_LOCALE.upcase)
+        translator = Summon::Locale.const_defined?(locale.upcase) ? Summon::Locale.const_get(locale.upcase) : default
+        translator::TRANSLATIONS[value] ? translator::TRANSLATIONS[value] : default::TRANSLATIONS[value]
       end
     end
     
@@ -102,14 +89,14 @@ module Summon
         @single = options[:single].nil? ? !(name.to_s.downcase =~ /s$/) : options[:single]
       end
       
-      def get(json)
+      def get(service, json)
         raw = json[@json_name || @camel_name]
         raw = json[@pascal_name] if raw.nil?
         if raw.nil?
           @single ? nil : []
         else
           raw = @single && raw.kind_of?(Array) ? raw.first : raw
-          transform(raw) || raw
+          transform(service, raw) || raw
         end
       end
       
@@ -119,12 +106,12 @@ module Summon
         end
       end
       
-      def transform(raw)
+      def transform(service, raw)
         if @transform
-          ctor = proc do |h| 
-            ::Summon.const_get(@transform).new(h)
+          ctor = proc do |s,h| 
+            ::Summon.const_get(@transform).new(s,h)
           end
-          raw.kind_of?(Array) ? raw.map(&ctor) : ctor.call(raw)
+          raw.kind_of?(Array) ? raw.map {|a| [service, a]}.map(&ctor) : ctor.call(service, raw)
         end
       end
     end

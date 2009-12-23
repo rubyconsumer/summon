@@ -11,72 +11,46 @@ describe Summon::Schema do
   end
   
   def init(values)
-    @class.new(values)
+    @class.new(mock(:service, :locale => 'en'), values)
   end
   
   describe "Locale" do
-    it "should have a default locale" do
-      init(:foo => "bar", :baz => "bang").default_locale.should == 'en'
-    end
-    
-    it "should have a locale set to default locale if a locale is not specified" do
-      init(:foo => "bar", :baz => "bang").locale.should == 'en'
-    end
-    
-    it "should have a locale set to the locale specified" do
-      class XYZ < Summon::Schema
-      end
-      
-      @class = XYZ.new({}, 'fr')
-      @class.locale.should == 'fr'
-    end
-    
-    it "should error if an invalid locale is specified" do
-      class XYZ < Summon::Schema
-      end
-      
-      proc do
-        @class = XYZ.new({}, 'gr')
-      end.should raise_error("Locale 'gr' does not exist.")
-    end
-    
+                
     it "should have a french local when set to fr" do
-      class XYZ < Summon::Schema
+      Class.new(Summon::Schema).new(mock(:service, :locale => 'fr')).tap do |o|
+        o.locale.should == 'fr'
       end
-      
-      @class = XYZ.new()
-      @class.locale = 'fr'
-      @class.locale.should == 'fr'
     end
     
     it "should translate ContentType to french" do
-      class XYZ < Summon::Schema
+      Class.new(Summon::Schema).new(mock(:service, :locale => 'fr')).tap do |o|
+        o.translate("ContentType").should == 'Type de la Contente'
       end
-      
-      @class = XYZ.new()
-      @class.locale = 'fr'
-      @class.translate("ContentType").should == 'Type de la Contente'
     end
     
     it "should be able to switch translation languages" do
-      class XYZ < Summon::Schema
+      mock(:service, :locale => 'fr').tap do |service|
+        Class.new(Summon::Schema).new(service).tap do |o|
+          o.translate("ContentType").should == 'Type de la Contente'
+          service.stub!(:locale).and_return('en')
+          o.translate("ContentType").should == 'ContentType'
+        end
       end
-      
-      @class = XYZ.new()
-      @class.locale = 'fr'
-      @class.translate("ContentType").should == 'Type de la Contente'
-      @class.locale = 'en'
-      @class.translate("ContentType").should == 'ContentType'
     end
     
-    it "should be go to the default language if the locale is not available" do
-      class XYZ < Summon::Schema
+    it "should go to the default language if the locale is not available" do
+      Class.new(Summon::Schema).new(mock(:service, :locale => 'fr')).tap do |o|
+       o.translate("ContentType").should == 'Type de la Contente'
+       o.translate("Book").should == 'Book'        
       end
-      
-      @class = XYZ.new()
-      @class.locale = 'fr'
-      @class.translate("ContentType").should == 'Type de la Contente'
-      @class.translate("Book").should == 'Book'
+    end
+    
+    it "should default to english if it does not recognize the locale" do
+      mock(:service, :locale => 'xx').tap do |service|
+        Class.new(Summon::Schema).new(service).tap do |o|
+          o.translate("ContentType").should == 'ContentType'
+        end
+      end
     end
   end
   

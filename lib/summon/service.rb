@@ -19,10 +19,8 @@ module Summon
     end    
     
     def search(params = {})
-      locale = params['locale'] ? params['locale'] : @locale
-      
       connect("/search", params) do |result|
-        Summon::Search.new(result, locale)
+        Summon::Search.new(self,result)
       end
     end
 
