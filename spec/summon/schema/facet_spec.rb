@@ -1,9 +1,8 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 
 describe Summon::Facet do
-
   it "should map" do
-    facet = Summon::Facet.new(JSON.parse(EXAMPLE_FACET_JSON))
+    facet = Summon::Facet.new(@service, JSON.parse(EXAMPLE_FACET_JSON))
     facet.remove_src
     facet.counts.each {|f| f.remove_src }
     facet.to_yaml.should == EXPECTED_FACET_YAML
@@ -15,29 +14,32 @@ describe Summon::Facet do
   end
   
   describe "translate display name" do
-    before(:each) do
-      @facet = Summon::Facet.new(JSON.parse(EXAMPLE_FACET_JSON))
-    end
-    
     it "should return the default value" do
-      @facet.local_name.should == @facet.display_name
+      mock(:service, :locale => 'en').tap do |service|
+        @facet = Summon::Facet.new(service, JSON.parse(EXAMPLE_FACET_JSON))
+        @facet.local_name.should == @facet.display_name
+      end
     end
     
     it "should return the Frech locale" do
-      @facet.locale = "fr"
+      mock(:service, :locale => 'fr').tap do |service|
+        @facet = Summon::Facet.new(service, JSON.parse(EXAMPLE_FACET_JSON))
       
-      @facet.display_name.should == "ContentType"
-      @facet.local_name.should == "Type de la Contente"
+        @facet.display_name.should == "ContentType"
+        @facet.local_name.should == "Type de la Contente"
+      end
     end
   end
   
   
   it "should now how to escape values" do
-    count = Summon::FacetCount.new(:value => "the quick, brown, fox")
+    service = mock(:service, :locale => 'en')
+    
+    count = Summon::FacetCount.new(service, :value => "the quick, brown, fox")
     count.value.should == "the quick, brown, fox"
     count.escaped_value.should == 'the quick\, brown\, fox'
     
-    Summon::FacetCount.new(:value => ': everything (else) and $1 or {is} it\ ').escaped_value.should == 
+    Summon::FacetCount.new(service, :value => ': everything (else) and $1 or {is} it\ ').escaped_value.should == 
                                      '\: everything \(else\) and \$1 or \{is\} it\\ '
   end
   
@@ -97,11 +99,10 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,Book,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,Book,true)
   count: 799602
-  default_locale: en
   further_limiting: true
-  locale: en
   negated: false
   remove_command: eatMyShorts()
+  service: 
   src: 
   value: Book
 - !ruby/object:Summon::FacetCount 
@@ -109,11 +110,10 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,JournalArticle,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,JournalArticle,true)
   count: 49765
-  default_locale: en
   further_limiting: true
-  locale: en
   negated: false
   remove_command: eatMyShorts()
+  service: 
   src: 
   value: JournalArticle
 - !ruby/object:Summon::FacetCount 
@@ -121,21 +121,19 @@ counts:
   apply_command: addFacetValueFilter(ContentType_sfacet,Journal Article,false)
   apply_negated_command: addFacetValueFilter(ContentType_sfacet,Journal Article,true)
   count: 179002
-  default_locale: en
   further_limiting: true
-  locale: en
   negated: false
   remove_command: eatMyShorts()
+  service: 
   src: 
   value: Journal Article
-default_locale: en
 display_name: ContentType
 field_name: ContentType_sfacet
-locale: en
 page_number: 1
 page_size: 10
 remove_command: removeFacetField(ContentType_sfacet)
 remove_value_filters_command: removeFacetValueFilters(ContentType)
+service: 
 src: 
   YAML
 end

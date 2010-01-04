@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../spec_helper'
 
 describe Summon::Document do
   it "should map" do
-    doc = Summon::Document.new(JSON.parse(EXAMPLE_DOCUMENT_JSON))
+    doc = Summon::Document.new(@service, JSON.parse(EXAMPLE_DOCUMENT_JSON))
     doc.remove_src
     doc.publication_date.remove_src
     doc.authors.each {|a| a.remove_src }
@@ -201,7 +201,6 @@ content_type: Audio Recording
 corporate_authors: 
 - Hunter, Rick
 - Crusher, Beverly
-default_locale: en
 dissertation_advisor: Claudio Friedmann
 dissertation_category: Education
 dissertation_degree: M.S.J.
@@ -230,15 +229,13 @@ issue: "7"
 languages: 
 - English
 library: Women's Center Library
-locale: en
 open_url: ctx_ver=Z39.88-2004&rfr_id=info:sid/summon.serialssolutions.com&rft_val_fmt=info:ofi/fmt:kev:mtx:dc&rft.title=Lisa+Hunter+--+alive&rft.creator=Hunter%2C+Lisa&rft.date=c200-0.&rft.pub=Spirulina+Records&rft.externalDBID=n%2Fa&rft.externalDocID=b16644323
 page_count: xxviii, 140 p.
 patent_number: 
 publication_date: !ruby/object:Summon::Date 
   day: "02"
-  default_locale: en
-  locale: en
   month: "01"
+  service: 
   src: 
   text: c2000.
   year: "2000"
@@ -247,6 +244,7 @@ publication_title: Batman Books
 publishers: 
 - Spirulina Records
 - Swingsistersound
+service: 
 snippet: This is the snippet
 src: 
 start_page: pp23
